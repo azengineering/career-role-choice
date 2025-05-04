@@ -1,8 +1,8 @@
-
 import React from "react";
 import Header from "@/components/navigation/Header";
 import Footer from "@/components/common/Footer";
 import HeroSection from "@/components/homepage/HeroSection";
+import { Button } from "@/components/ui/button";
 
 const JobSeekerHome: React.FC = () => {
   // Featured job listings
