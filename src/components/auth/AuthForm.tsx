@@ -18,27 +18,54 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<UserRole>("job-seeker");
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
   
   const { login, signup } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const validateForm = () => {
+    const newErrors: {
+      email?: string;
+      password?: string;
+      confirmPassword?: string;
+    } = {};
+    
+    // Simple email validation
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    
+    // Password validation
+    if (!password || password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    
+    // Confirm password (only for signup)
+    if (type === "signup" && password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      if (type === "signup" && password !== confirmPassword) {
-        toast({
-          title: "Passwords do not match",
-          description: "Please make sure your passwords match.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-      
       let success;
+      
       if (type === "login") {
         success = await login(email, password, role);
       } else {
@@ -46,14 +73,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       }
       
       if (success) {
-        toast({
-          title: type === "login" ? "Login Successful" : "Account Created",
-          description: type === "login" 
-            ? "Welcome back to Jobs-Here!" 
-            : "Your account has been created successfully.",
-        });
-        
-        navigate(role === "job-seeker" ? "/job-seeker" : "/employer");
+        navigate(role === "job-seeker" ? "/job-seeker/dashboard" : "/employer/dashboard");
       }
     } catch (error) {
       toast({
@@ -77,7 +97,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className={errors.email ? "border-red-500" : ""}
         />
+        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
       </div>
       
       <div className="space-y-2">
@@ -89,7 +111,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className={errors.password ? "border-red-500" : ""}
         />
+        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
       </div>
       
       {type === "signup" && (
@@ -102,7 +126,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            className={errors.confirmPassword ? "border-red-500" : ""}
           />
+          {errors.confirmPassword && (
+            <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+          )}
         </div>
       )}
       
@@ -123,6 +151,20 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Processing..." : type === "login" ? "Login" : "Sign Up"}
       </Button>
+      
+      {type === "login" && (
+        <div className="text-sm text-center text-gray-500">
+          <p>
+            Sample logins for demo:
+          </p>
+          <p className="mt-1">
+            <strong>Job Seeker:</strong> jobseeker@example.com / password123
+          </p>
+          <p>
+            <strong>Employer:</strong> employer@example.com / password123
+          </p>
+        </div>
+      )}
     </form>
   );
 };

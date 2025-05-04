@@ -5,6 +5,7 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/common/Logo";
 import { useAuth } from "@/context/AuthContext";
+import RoleSwitcher from "@/components/common/RoleSwitcher";
 
 interface HeaderProps {
   userType: "job-seeker" | "employer";
@@ -25,6 +26,7 @@ const Header: React.FC<HeaderProps> = ({ userType }) => {
   };
 
   const baseUrl = userType === "job-seeker" ? "/job-seeker" : "/employer";
+  const dashboardUrl = userType === "job-seeker" ? "/job-seeker/dashboard" : "/employer/dashboard";
   
   const navLinks = userType === "job-seeker" 
     ? [
@@ -32,12 +34,14 @@ const Header: React.FC<HeaderProps> = ({ userType }) => {
         { name: "About", path: `${baseUrl}/about` },
         { name: "Find Jobs", path: "/job-seeker/find-jobs" },
         { name: "Job Tools", path: "/job-seeker/job-tools" },
+        ...(isAuthenticated ? [{ name: "Dashboard", path: dashboardUrl }] : [])
       ]
     : [
         { name: "Home", path: baseUrl },
         { name: "About", path: `${baseUrl}/about` },
         { name: "Post Jobs", path: "/employer/post-jobs" },
         { name: "Recruiter Tools", path: "/employer/recruiter-tools" },
+        ...(isAuthenticated ? [{ name: "Dashboard", path: dashboardUrl }] : [])
       ];
 
   return (
@@ -64,8 +68,9 @@ const Header: React.FC<HeaderProps> = ({ userType }) => {
             ))}
           </nav>
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth Buttons & Role Switcher */}
           <div className="hidden md:flex items-center space-x-4">
+            <RoleSwitcher />
             {isAuthenticated ? (
               <Button 
                 variant="outline"
@@ -111,6 +116,9 @@ const Header: React.FC<HeaderProps> = ({ userType }) => {
                   {link.name}
                 </Link>
               ))}
+              <div className="pt-4 px-4 border-t border-gray-200">
+                <RoleSwitcher />
+              </div>
               <div className="pt-4 border-t border-gray-200">
                 {isAuthenticated ? (
                   <Button

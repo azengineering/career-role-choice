@@ -17,6 +17,9 @@ import FindJobsPage from "./pages/FindJobsPage";
 import JobToolsPage from "./pages/JobToolsPage";
 import PostJobsPage from "./pages/PostJobsPage";
 import RecruiterToolsPage from "./pages/RecruiterToolsPage";
+import JobSeekerDashboard from "./pages/JobSeekerDashboard";
+import EmployerDashboard from "./pages/EmployerDashboard";
+import ScrollToTop from "./components/common/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -59,25 +62,30 @@ const RoleRoute: React.FC<{
 };
 
 const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<Welcome />} />
-    <Route path="/login" element={<Login />} />
-    <Route path="/signup" element={<Signup />} />
-    
-    {/* Job Seeker Routes */}
-    <Route path="/job-seeker" element={<RoleRoute role="job-seeker"><JobSeekerHome /></RoleRoute>} />
-    <Route path="/job-seeker/about" element={<RoleRoute role="job-seeker"><AboutPage userType="job-seeker" /></RoleRoute>} />
-    <Route path="/job-seeker/find-jobs" element={<RoleRoute role="job-seeker"><FindJobsPage /></RoleRoute>} />
-    <Route path="/job-seeker/job-tools" element={<RoleRoute role="job-seeker"><JobToolsPage /></RoleRoute>} />
-    
-    {/* Employer Routes */}
-    <Route path="/employer" element={<RoleRoute role="employer"><EmployerHome /></RoleRoute>} />
-    <Route path="/employer/about" element={<RoleRoute role="employer"><AboutPage userType="employer" /></RoleRoute>} />
-    <Route path="/employer/post-jobs" element={<RoleRoute role="employer"><PostJobsPage /></RoleRoute>} />
-    <Route path="/employer/recruiter-tools" element={<RoleRoute role="employer"><RecruiterToolsPage /></RoleRoute>} />
-    
-    <Route path="*" element={<NotFound />} />
-  </Routes>
+  <>
+    <Routes>
+      <Route path="/" element={<Welcome />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      
+      {/* Job Seeker Routes */}
+      <Route path="/job-seeker" element={<RoleRoute role="job-seeker"><JobSeekerHome /></RoleRoute>} />
+      <Route path="/job-seeker/about" element={<RoleRoute role="job-seeker"><AboutPage userType="job-seeker" /></RoleRoute>} />
+      <Route path="/job-seeker/find-jobs" element={<RoleRoute role="job-seeker"><FindJobsPage /></RoleRoute>} />
+      <Route path="/job-seeker/job-tools" element={<RoleRoute role="job-seeker"><JobToolsPage /></RoleRoute>} />
+      <Route path="/job-seeker/dashboard" element={<ProtectedRoute requiredRole="job-seeker"><JobSeekerDashboard /></ProtectedRoute>} />
+      
+      {/* Employer Routes */}
+      <Route path="/employer" element={<RoleRoute role="employer"><EmployerHome /></RoleRoute>} />
+      <Route path="/employer/about" element={<RoleRoute role="employer"><AboutPage userType="employer" /></RoleRoute>} />
+      <Route path="/employer/post-jobs" element={<RoleRoute role="employer"><PostJobsPage /></RoleRoute>} />
+      <Route path="/employer/recruiter-tools" element={<RoleRoute role="employer"><RecruiterToolsPage /></RoleRoute>} />
+      <Route path="/employer/dashboard" element={<ProtectedRoute requiredRole="employer"><EmployerDashboard /></ProtectedRoute>} />
+      
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+    <ScrollToTop />
+  </>
 );
 
 const App = () => (
