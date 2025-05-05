@@ -1,4 +1,3 @@
-
 import React from "react";
 import Header from "@/components/navigation/Header";
 import Footer from "@/components/common/Footer";
@@ -7,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
 import { Navigate, Link } from "react-router-dom";
-import { Briefcase, Users, Bar, Clock } from "lucide-react";
+import { Briefcase, Users, BarChart, Clock } from "lucide-react";
 import ScrollToTop from "@/components/common/ScrollToTop";
 
 const EmployerDashboard: React.FC = () => {
@@ -142,7 +141,7 @@ const EmployerDashboard: React.FC = () => {
                 <CardContent>
                   <div className="h-80 flex items-center justify-center bg-gray-100 rounded-md mb-4 border">
                     <div className="text-center">
-                      <Bar className="h-12 w-12 mx-auto text-gray-400" />
+                      <BarChart className="h-12 w-12 mx-auto text-gray-400" />
                       <p className="mt-2 text-gray-500">Job posting analytics visualization</p>
                       <p className="text-sm text-gray-400">(Placeholder for actual charts)</p>
                     </div>
