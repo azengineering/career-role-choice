@@ -1,41 +1,12 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { Card } from "@/components/ui/card";
-import { MessageSquare, Briefcase, Plus, X } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-
-export interface CustomQuestion {
-  question: string;
-  answerType: "text" | "yes_no";
-}
-
-export interface JobPostingData {
-  id?: number;
-  title: string;
-  industry: string;
-  location: string;
-  type: string;
-  minExperience: number;
-  maxExperience: number;
-  minSalary: number;
-  maxSalary: number;
-  skills: string[];
-  vacancies: number;
-  description: string;
-  customQuestions: CustomQuestion[];
-  isDraft?: boolean;
-  status?: string;
-  postedDate?: string;
-}
+import BasicJobDetails from "./job-post/BasicJobDetails";
+import JobDescription from "./job-post/JobDescription";
+import CustomQuestions from "./job-post/CustomQuestions";
+import FormActions from "./job-post/FormActions";
+import { JobPostingData, CustomQuestion } from "./JobPostFormTypes";
 
 interface JobPostFormProps {
   initialData?: JobPostingData;
@@ -216,345 +187,44 @@ We offer a dynamic work environment with opportunities for professional growth a
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Column - Basic Details */}
         <div className="space-y-6">
-          <Card className="p-6 border-l-4 border-l-primary shadow-md bg-gradient-to-br from-white to-gray-50">
-            <h3 className="text-lg font-medium mb-4 text-primary flex items-center">
-              <Briefcase className="mr-2 h-5 w-5" />
-              Basic Job Details
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title" className="text-sm font-medium">Job Title <span className="text-red-500">*</span></Label>
-                <Input
-                  id="title"
-                  name="title"
-                  placeholder="e.g., Front-end Developer"
-                  value={formData.title}
-                  onChange={handleChange}
-                  required
-                  className="border-gray-300 focus:ring-primary focus:border-primary"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="industry" className="text-sm font-medium">Industry <span className="text-red-500">*</span></Label>
-                <Select value={formData.industry} onValueChange={(value) => handleSelectChange("industry", value)}>
-                  <SelectTrigger className="border-gray-300 focus:ring-primary">
-                    <SelectValue placeholder="Select industry" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Technology">Technology</SelectItem>
-                    <SelectItem value="Healthcare">Healthcare</SelectItem>
-                    <SelectItem value="Finance">Finance</SelectItem>
-                    <SelectItem value="Education">Education</SelectItem>
-                    <SelectItem value="Retail">Retail</SelectItem>
-                    <SelectItem value="Manufacturing">Manufacturing</SelectItem>
-                    <SelectItem value="Media">Media & Entertainment</SelectItem>
-                    <SelectItem value="Transportation">Transportation</SelectItem>
-                    <SelectItem value="Hospitality">Hospitality</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="location" className="text-sm font-medium">Location <span className="text-red-500">*</span></Label>
-                <Input
-                  id="location"
-                  name="location"
-                  placeholder="City, State or Remote"
-                  value={formData.location}
-                  onChange={handleChange}
-                  required
-                  className="border-gray-300 focus:ring-primary focus:border-primary"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="type" className="text-sm font-medium">Job Type <span className="text-red-500">*</span></Label>
-                <Select value={formData.type} onValueChange={(value) => handleSelectChange("type", value)}>
-                  <SelectTrigger className="border-gray-300 focus:ring-primary">
-                    <SelectValue placeholder="Select job type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Full-time">Full-time</SelectItem>
-                    <SelectItem value="Part-time">Part-time</SelectItem>
-                    <SelectItem value="Contract">Contract</SelectItem>
-                    <SelectItem value="Internship">Internship</SelectItem>
-                    <SelectItem value="Freelance">Freelance</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Experience Range (years) <span className="text-red-500">*</span></Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="minExperience" className="text-xs text-gray-500">Minimum</Label>
-                    <Input
-                      id="minExperience"
-                      name="minExperience"
-                      type="number"
-                      min={0}
-                      step={1}
-                      value={formData.minExperience}
-                      onChange={handleNumberChange}
-                      className="border-gray-300 focus:ring-primary mt-1"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="maxExperience" className="text-xs text-gray-500">Maximum</Label>
-                    <Input
-                      id="maxExperience"
-                      name="maxExperience"
-                      type="number"
-                      min={formData.minExperience}
-                      step={1}
-                      value={formData.maxExperience}
-                      onChange={handleNumberChange}
-                      className="border-gray-300 focus:ring-primary mt-1"
-                      placeholder="5"
-                    />
-                  </div>
-                </div>
-                <div className="text-xs text-gray-500 italic">Enter experience in years</div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Salary Range (LPA) <span className="text-red-500">*</span></Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="minSalary" className="text-xs text-gray-500">Minimum</Label>
-                    <Input
-                      id="minSalary"
-                      name="minSalary"
-                      type="number"
-                      min={1}
-                      step={1}
-                      value={formData.minSalary}
-                      onChange={handleNumberChange}
-                      className="border-gray-300 focus:ring-primary mt-1"
-                      placeholder="5"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="maxSalary" className="text-xs text-gray-500">Maximum</Label>
-                    <Input
-                      id="maxSalary"
-                      name="maxSalary"
-                      type="number"
-                      min={formData.minSalary}
-                      step={1}
-                      value={formData.maxSalary}
-                      onChange={handleNumberChange}
-                      className="border-gray-300 focus:ring-primary mt-1"
-                      placeholder="30"
-                    />
-                  </div>
-                </div>
-                <div className="text-xs text-gray-500 italic">Enter salary in Lakhs Per Annum (LPA)</div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="vacancies" className="text-sm font-medium">Number of Vacancies</Label>
-                <Input
-                  id="vacancies"
-                  name="vacancies"
-                  type="number"
-                  min={1}
-                  placeholder="1"
-                  value={formData.vacancies}
-                  onChange={handleNumberChange}
-                  className="border-gray-300 focus:ring-primary focus:border-primary"
-                />
-              </div>
-              
-              <div className="space-y-4">
-                <Label className="text-sm font-medium">Required Skills</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a skill"
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                    className="border-gray-300 focus:ring-primary focus:border-primary"
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={addSkill}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add
-                  </Button>
-                </div>
-                
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.skills.map((skill, index) => (
-                    <div key={index} className="bg-primary/10 px-3 py-1 rounded-full flex items-center gap-2 text-primary font-medium">
-                      <span>{skill}</span>
-                      <button 
-                        type="button" 
-                        onClick={() => removeSkill(index)}
-                        className="text-primary hover:text-primary/70 focus:outline-none"
-                        aria-label="Remove skill"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                  {formData.skills.length === 0 && (
-                    <p className="text-sm text-gray-500 italic">No skills added yet</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Card>
+          <BasicJobDetails 
+            formData={formData}
+            skillInput={skillInput}
+            setSkillInput={setSkillInput}
+            handleChange={handleChange}
+            handleNumberChange={handleNumberChange}
+            handleSelectChange={handleSelectChange}
+            addSkill={addSkill}
+            removeSkill={removeSkill}
+          />
         </div>
         
         {/* Right Column - Description & Custom Questions */}
         <div className="space-y-6">
-          <Card className="p-6 border-l-4 border-l-primary/70 shadow-md bg-gradient-to-br from-white to-gray-50">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-primary flex items-center">
-                <MessageSquare className="mr-2 h-5 w-5" />
-                Job Description <span className="text-red-500">*</span>
-              </h3>
-              <Button 
-                type="button" 
-                onClick={generateJobDescription}
-                disabled={isGeneratingDescription}
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary/10 flex items-center gap-2"
-              >
-                <MessageSquare className="h-4 w-4" />
-                {isGeneratingDescription ? "Generating..." : "Generate with AI"}
-              </Button>
-            </div>
-            
-            <div className="space-y-2">
-              <Textarea
-                id="description"
-                name="description"
-                placeholder="Describe the role, responsibilities, and ideal candidate..."
-                value={formData.description}
-                onChange={handleChange}
-                className="min-h-[300px] border-gray-300 focus:ring-primary focus:border-primary"
-                required
-              />
-            </div>
-          </Card>
+          <JobDescription 
+            description={formData.description}
+            handleChange={handleChange}
+            generateJobDescription={generateJobDescription}
+            isGeneratingDescription={isGeneratingDescription}
+          />
           
-          <Card className="p-6 border-l-4 border-l-primary/50 shadow-md bg-gradient-to-br from-white to-gray-50">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-primary flex items-center">
-                <MessageSquare className="mr-2 h-5 w-5" />
-                Custom Questions
-              </h3>
-              <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
-                {formData.customQuestions.length}/10 questions
-              </span>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-[1fr,auto] gap-3">
-                <div className="space-y-3">
-                  <Input
-                    placeholder="Add a custom question for candidates"
-                    value={questionInput}
-                    onChange={(e) => setQuestionInput(e.target.value)}
-                    disabled={formData.customQuestions.length >= 10}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomQuestion())}
-                    className="border-gray-300 focus:ring-primary focus:border-primary"
-                  />
-                  <div className="flex items-center space-x-4 bg-gray-50 p-2 rounded-lg">
-                    <span className="text-sm font-medium">Answer type:</span>
-                    <RadioGroup 
-                      value={newQuestionType} 
-                      onValueChange={(value) => setNewQuestionType(value as "text" | "yes_no")}
-                      className="flex space-x-4"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="text" id="text" />
-                        <Label htmlFor="text" className="cursor-pointer">Text answer</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="yes_no" id="yes_no" />
-                        <Label htmlFor="yes_no" className="cursor-pointer">Yes/No answer</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </div>
-                <Button 
-                  type="button" 
-                  onClick={addCustomQuestion}
-                  disabled={formData.customQuestions.length >= 10 || !questionInput.trim()}
-                  className="bg-primary hover:bg-primary/90 self-start"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add
-                </Button>
-              </div>
-              
-              <div className="space-y-3 mt-4 max-h-[400px] overflow-y-auto pr-2">
-                {formData.customQuestions.map((question, index) => (
-                  <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary/30 transition-colors">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-1">
-                        <div className="font-medium text-primary">Question {index + 1}</div>
-                        <div className="text-gray-700">{question.question}</div>
-                        <div className="text-sm text-primary inline-flex items-center bg-primary/10 px-2 py-0.5 rounded-full">
-                          Answer type: {question.answerType === "text" ? "Text" : "Yes/No"}
-                        </div>
-                      </div>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => removeCustomQuestion(index)}
-                        className="text-gray-500 hover:text-red-500"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                
-                {formData.customQuestions.length === 0 && (
-                  <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                    <MessageSquare className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                    <p className="text-gray-500 font-medium">No custom questions added yet</p>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Custom questions help you screen candidates more effectively
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
+          <CustomQuestions 
+            customQuestions={formData.customQuestions}
+            questionInput={questionInput}
+            setQuestionInput={setQuestionInput}
+            newQuestionType={newQuestionType}
+            setNewQuestionType={setNewQuestionType}
+            addCustomQuestion={addCustomQuestion}
+            removeCustomQuestion={removeCustomQuestion}
+          />
         </div>
       </div>
       
-      <div className="flex flex-col sm:flex-row gap-4 justify-end mt-8">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={(e) => handleSubmit(e, true)}
-          disabled={isLoading}
-          className="border-primary text-primary hover:bg-primary/10"
-        >
-          Save as Draft
-        </Button>
-        <Button 
-          type="submit" 
-          disabled={isLoading}
-          className="bg-primary hover:bg-primary/90 gap-2"
-        >
-          <Briefcase className="h-4 w-4" />
-          {isLoading ? "Submitting..." : mode === "create" ? "Post Job" : "Update Job"}
-        </Button>
-      </div>
+      <FormActions 
+        isLoading={isLoading}
+        mode={mode}
+        handleSubmit={handleSubmit}
+      />
     </form>
   );
 };
