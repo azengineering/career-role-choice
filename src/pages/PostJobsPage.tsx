@@ -15,12 +15,12 @@ const PostJobsPage: React.FC = () => {
     <div className="flex flex-col min-h-screen">
       <Header userType="employer" />
       <main className="flex-grow">
-        <div className="bg-gradient-to-br from-ai-primary/10 to-ai-accent/5 py-16">
+        <div className="bg-gradient-to-br from-primary/10 to-accent/5 py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-4xl font-bold mb-4">Post a Job</h1>
+              <h1 className="text-4xl font-bold mb-4 text-gray-800">Post a Job</h1>
               <p className="text-xl text-gray-700">
-                Reach thousands of qualified candidates with your job listing
+                Create an effective job posting to attract qualified candidates
               </p>
             </div>
           </div>
@@ -28,21 +28,10 @@ const PostJobsPage: React.FC = () => {
 
         <div className="container mx-auto px-4 py-12">
           {isAuthenticated ? (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <div className="bg-white rounded-lg shadow-lg p-8">
-                <h2 className="text-2xl font-bold mb-6">Job Details</h2>
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Job Details</h2>
                 <JobPostForm />
-              </div>
-              
-              <div className="mt-8 bg-ai-primary/10 rounded-lg p-6">
-                <h3 className="text-xl font-bold mb-4">Need More Job Postings?</h3>
-                <p className="mb-6">
-                  Save with our multi-job packages or get a custom solution for your recruitment needs.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button variant="outline">View Packages</Button>
-                  <Button variant="secondary">Contact Sales</Button>
-                </div>
               </div>
             </div>
           ) : (

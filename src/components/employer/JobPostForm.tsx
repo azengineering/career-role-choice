@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
 import { MessageSquare, Briefcase, Plus, X } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -86,22 +85,6 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSalaryChange = (name: string, value: number[]) => {
-    if (name === "salaryRange") {
-      setFormData(prev => ({
-        ...prev,
-        minSalary: value[0],
-        maxSalary: value[1]
-      }));
-    } else if (name === "experienceRange") {
-      setFormData(prev => ({
-        ...prev,
-        minExperience: value[0],
-        maxExperience: value[1]
-      }));
-    }
-  };
-  
   const addSkill = () => {
     if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
       setFormData(prev => ({
@@ -227,14 +210,10 @@ We offer a dynamic work environment with opportunities for professional growth a
       setIsLoading(false);
     }, 1000);
   };
-
-  const formatSalary = (value: number) => {
-    return `${value} LPA`;
-  };
   
   return (
     <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Column - Basic Details */}
         <div className="space-y-6">
           <Card className="p-6 border-l-4 border-l-primary shadow-md bg-gradient-to-br from-white to-gray-50">
@@ -307,37 +286,74 @@ We offer a dynamic work environment with opportunities for professional growth a
                 </Select>
               </div>
               
-              <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm font-medium">Experience Range (years)</Label>
-                  <span className="text-sm text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
-                    {formData.minExperience} - {formData.maxExperience} years
-                  </span>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Experience Range (years) <span className="text-red-500">*</span></Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="minExperience" className="text-xs text-gray-500">Minimum</Label>
+                    <Input
+                      id="minExperience"
+                      name="minExperience"
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={formData.minExperience}
+                      onChange={handleNumberChange}
+                      className="border-gray-300 focus:ring-primary mt-1"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="maxExperience" className="text-xs text-gray-500">Maximum</Label>
+                    <Input
+                      id="maxExperience"
+                      name="maxExperience"
+                      type="number"
+                      min={formData.minExperience}
+                      step={1}
+                      value={formData.maxExperience}
+                      onChange={handleNumberChange}
+                      className="border-gray-300 focus:ring-primary mt-1"
+                      placeholder="5"
+                    />
+                  </div>
                 </div>
-                <Slider
-                  defaultValue={[formData.minExperience, formData.maxExperience]}
-                  max={20}
-                  step={1}
-                  onValueChange={(value) => handleSalaryChange("experienceRange", value)}
-                  className="py-4"
-                />
+                <div className="text-xs text-gray-500 italic">Enter experience in years</div>
               </div>
               
-              <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <Label className="text-sm font-medium">Salary Range (LPA)</Label>
-                  <span className="text-sm text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
-                    {formatSalary(formData.minSalary)} - {formatSalary(formData.maxSalary)}
-                  </span>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Salary Range (LPA) <span className="text-red-500">*</span></Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="minSalary" className="text-xs text-gray-500">Minimum</Label>
+                    <Input
+                      id="minSalary"
+                      name="minSalary"
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={formData.minSalary}
+                      onChange={handleNumberChange}
+                      className="border-gray-300 focus:ring-primary mt-1"
+                      placeholder="5"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="maxSalary" className="text-xs text-gray-500">Maximum</Label>
+                    <Input
+                      id="maxSalary"
+                      name="maxSalary"
+                      type="number"
+                      min={formData.minSalary}
+                      step={1}
+                      value={formData.maxSalary}
+                      onChange={handleNumberChange}
+                      className="border-gray-300 focus:ring-primary mt-1"
+                      placeholder="30"
+                    />
+                  </div>
                 </div>
-                <Slider
-                  defaultValue={[formData.minSalary, formData.maxSalary]}
-                  min={1}
-                  max={100}
-                  step={1}
-                  onValueChange={(value) => handleSalaryChange("salaryRange", value)}
-                  className="py-4"
-                />
+                <div className="text-xs text-gray-500 italic">Enter salary in Lakhs Per Annum (LPA)</div>
               </div>
               
               <div className="space-y-2">
@@ -452,20 +468,23 @@ We offer a dynamic work environment with opportunities for professional growth a
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomQuestion())}
                     className="border-gray-300 focus:ring-primary focus:border-primary"
                   />
-                  <RadioGroup 
-                    value={newQuestionType} 
-                    onValueChange={(value) => setNewQuestionType(value as "text" | "yes_no")}
-                    className="flex space-x-4"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="text" id="text" />
-                      <Label htmlFor="text" className="cursor-pointer">Text answer</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes_no" id="yes_no" />
-                      <Label htmlFor="yes_no" className="cursor-pointer">Yes/No answer</Label>
-                    </div>
-                  </RadioGroup>
+                  <div className="flex items-center space-x-4 bg-gray-50 p-2 rounded-lg">
+                    <span className="text-sm font-medium">Answer type:</span>
+                    <RadioGroup 
+                      value={newQuestionType} 
+                      onValueChange={(value) => setNewQuestionType(value as "text" | "yes_no")}
+                      className="flex space-x-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="text" id="text" />
+                        <Label htmlFor="text" className="cursor-pointer">Text answer</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes_no" id="yes_no" />
+                        <Label htmlFor="yes_no" className="cursor-pointer">Yes/No answer</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
                 </div>
                 <Button 
                   type="button" 
@@ -478,12 +497,12 @@ We offer a dynamic work environment with opportunities for professional growth a
                 </Button>
               </div>
               
-              <div className="space-y-3 mt-4">
+              <div className="space-y-3 mt-4 max-h-[400px] overflow-y-auto pr-2">
                 {formData.customQuestions.map((question, index) => (
-                  <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary/30 transition-colors">
                     <div className="flex justify-between items-start">
                       <div className="space-y-1">
-                        <div className="font-medium">Question {index + 1}</div>
+                        <div className="font-medium text-primary">Question {index + 1}</div>
                         <div className="text-gray-700">{question.question}</div>
                         <div className="text-sm text-primary inline-flex items-center bg-primary/10 px-2 py-0.5 rounded-full">
                           Answer type: {question.answerType === "text" ? "Text" : "Yes/No"}
