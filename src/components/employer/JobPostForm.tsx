@@ -8,13 +8,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Card } from "@/components/ui/card";
-import { MessageSquare, Briefcase } from "lucide-react";
+import { MessageSquare, Briefcase, Plus, X } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+
+export interface CustomQuestion {
+  question: string;
+  answerType: "text" | "yes_no";
+}
 
 export interface JobPostingData {
   id?: number;
   title: string;
-  company: string;
   industry: string;
   location: string;
   type: string;
@@ -25,9 +32,7 @@ export interface JobPostingData {
   skills: string[];
   vacancies: number;
   description: string;
-  requirements: string[];
-  benefits: string[];
-  customQuestions: string[];
+  customQuestions: CustomQuestion[];
   isDraft?: boolean;
   status?: string;
   postedDate?: string;
@@ -42,29 +47,25 @@ interface JobPostFormProps {
 const JobPostForm: React.FC<JobPostFormProps> = ({ 
   initialData = {
     title: "",
-    company: "",
     industry: "",
     location: "",
     type: "",
     minExperience: 0,
     maxExperience: 5,
-    minSalary: 30000,
-    maxSalary: 100000,
+    minSalary: 5,
+    maxSalary: 30,
     skills: [],
     vacancies: 1,
     description: "",
-    requirements: [],
-    benefits: [],
     customQuestions: []
   }, 
   mode = "create",
   onSubmit 
 }) => {
   const [formData, setFormData] = useState<JobPostingData>(initialData);
-  const [requirementInput, setRequirementInput] = useState("");
-  const [benefitInput, setBenefitInput] = useState("");
   const [skillInput, setSkillInput] = useState("");
   const [questionInput, setQuestionInput] = useState("");
+  const [newQuestionType, setNewQuestionType] = useState<"text" | "yes_no">("text");
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   
@@ -118,45 +119,16 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
     }));
   };
   
-  const addRequirement = () => {
-    if (requirementInput.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        requirements: [...prev.requirements, requirementInput.trim()]
-      }));
-      setRequirementInput("");
-    }
-  };
-  
-  const removeRequirement = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      requirements: prev.requirements.filter((_, i) => i !== index)
-    }));
-  };
-  
-  const addBenefit = () => {
-    if (benefitInput.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        benefits: [...prev.benefits, benefitInput.trim()]
-      }));
-      setBenefitInput("");
-    }
-  };
-  
-  const removeBenefit = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      benefits: prev.benefits.filter((_, i) => i !== index)
-    }));
-  };
-
   const addCustomQuestion = () => {
     if (questionInput.trim() && formData.customQuestions.length < 10) {
+      const newQuestion: CustomQuestion = {
+        question: questionInput.trim(),
+        answerType: newQuestionType
+      };
+      
       setFormData(prev => ({
         ...prev,
-        customQuestions: [...prev.customQuestions, questionInput.trim()]
+        customQuestions: [...prev.customQuestions, newQuestion]
       }));
       setQuestionInput("");
     } else if (formData.customQuestions.length >= 10) {
@@ -194,7 +166,7 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
       
       const generatedDesc = `We are looking for a talented ${formData.title} to join our team in the ${formData.industry} industry. The ideal candidate will have ${experience} of experience and proficiency in ${skills || "relevant skills"}. 
 
-This role is based in ${formData.location || "our office location"} and offers a competitive salary range between $${(formData.minSalary/1000).toFixed(0)}k and $${(formData.maxSalary/1000).toFixed(0)}k per year.
+This role is based in ${formData.location || "our office location"} and offers a competitive salary range between ${formData.minSalary} LPA and ${formData.maxSalary} LPA per year.
 
 Key Responsibilities:
 • Collaborate with cross-functional teams to deliver high-quality solutions
@@ -256,8 +228,8 @@ We offer a dynamic work environment with opportunities for professional growth a
     }, 1000);
   };
 
-  const formatCurrency = (value: number) => {
-    return `$${value.toLocaleString()}`;
+  const formatSalary = (value: number) => {
+    return `${value} LPA`;
   };
   
   return (
@@ -265,12 +237,15 @@ We offer a dynamic work environment with opportunities for professional growth a
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left Column - Basic Details */}
         <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="text-lg font-medium mb-4">Basic Job Details</h3>
+          <Card className="p-6 border-l-4 border-l-primary shadow-md bg-gradient-to-br from-white to-gray-50">
+            <h3 className="text-lg font-medium mb-4 text-primary flex items-center">
+              <Briefcase className="mr-2 h-5 w-5" />
+              Basic Job Details
+            </h3>
             
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Job Title <span className="text-red-500">*</span></Label>
+                <Label htmlFor="title" className="text-sm font-medium">Job Title <span className="text-red-500">*</span></Label>
                 <Input
                   id="title"
                   name="title"
@@ -278,25 +253,14 @@ We offer a dynamic work environment with opportunities for professional growth a
                   value={formData.title}
                   onChange={handleChange}
                   required
+                  className="border-gray-300 focus:ring-primary focus:border-primary"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="company">Company Name <span className="text-red-500">*</span></Label>
-                <Input
-                  id="company"
-                  name="company"
-                  placeholder="Your company name"
-                  value={formData.company}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="industry">Industry <span className="text-red-500">*</span></Label>
+                <Label htmlFor="industry" className="text-sm font-medium">Industry <span className="text-red-500">*</span></Label>
                 <Select value={formData.industry} onValueChange={(value) => handleSelectChange("industry", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:ring-primary">
                     <SelectValue placeholder="Select industry" />
                   </SelectTrigger>
                   <SelectContent>
@@ -315,7 +279,7 @@ We offer a dynamic work environment with opportunities for professional growth a
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="location">Location <span className="text-red-500">*</span></Label>
+                <Label htmlFor="location" className="text-sm font-medium">Location <span className="text-red-500">*</span></Label>
                 <Input
                   id="location"
                   name="location"
@@ -323,13 +287,14 @@ We offer a dynamic work environment with opportunities for professional growth a
                   value={formData.location}
                   onChange={handleChange}
                   required
+                  className="border-gray-300 focus:ring-primary focus:border-primary"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="type">Job Type <span className="text-red-500">*</span></Label>
+                <Label htmlFor="type" className="text-sm font-medium">Job Type <span className="text-red-500">*</span></Label>
                 <Select value={formData.type} onValueChange={(value) => handleSelectChange("type", value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:ring-primary">
                     <SelectValue placeholder="Select job type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -342,10 +307,12 @@ We offer a dynamic work environment with opportunities for professional growth a
                 </Select>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between items-center">
-                  <Label>Experience Range (years)</Label>
-                  <span className="text-sm text-gray-500">{formData.minExperience} - {formData.maxExperience} years</span>
+                  <Label className="text-sm font-medium">Experience Range (years)</Label>
+                  <span className="text-sm text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
+                    {formData.minExperience} - {formData.maxExperience} years
+                  </span>
                 </div>
                 <Slider
                   defaultValue={[formData.minExperience, formData.maxExperience]}
@@ -356,23 +323,25 @@ We offer a dynamic work environment with opportunities for professional growth a
                 />
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between items-center">
-                  <Label>Salary Range (per year)</Label>
-                  <span className="text-sm text-gray-500">{formatCurrency(formData.minSalary)} - {formatCurrency(formData.maxSalary)}</span>
+                  <Label className="text-sm font-medium">Salary Range (LPA)</Label>
+                  <span className="text-sm text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
+                    {formatSalary(formData.minSalary)} - {formatSalary(formData.maxSalary)}
+                  </span>
                 </div>
                 <Slider
                   defaultValue={[formData.minSalary, formData.maxSalary]}
-                  min={0}
-                  max={300000}
-                  step={5000}
+                  min={1}
+                  max={100}
+                  step={1}
                   onValueChange={(value) => handleSalaryChange("salaryRange", value)}
                   className="py-4"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="vacancies">Number of Vacancies</Label>
+                <Label htmlFor="vacancies" className="text-sm font-medium">Number of Vacancies</Label>
                 <Input
                   id="vacancies"
                   name="vacancies"
@@ -381,98 +350,47 @@ We offer a dynamic work environment with opportunities for professional growth a
                   placeholder="1"
                   value={formData.vacancies}
                   onChange={handleNumberChange}
+                  className="border-gray-300 focus:ring-primary focus:border-primary"
                 />
               </div>
               
               <div className="space-y-4">
-                <Label>Required Skills</Label>
+                <Label className="text-sm font-medium">Required Skills</Label>
                 <div className="flex gap-2">
                   <Input
                     placeholder="Add a skill"
                     value={skillInput}
                     onChange={(e) => setSkillInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                    className="border-gray-300 focus:ring-primary focus:border-primary"
                   />
-                  <Button type="button" onClick={addSkill}>Add</Button>
+                  <Button 
+                    type="button" 
+                    onClick={addSkill}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add
+                  </Button>
                 </div>
                 
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.skills.map((skill, index) => (
-                    <div key={index} className="bg-gray-100 px-3 py-1 rounded-full flex items-center gap-2">
+                    <div key={index} className="bg-primary/10 px-3 py-1 rounded-full flex items-center gap-2 text-primary font-medium">
                       <span>{skill}</span>
                       <button 
                         type="button" 
                         onClick={() => removeSkill(index)}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-primary hover:text-primary/70 focus:outline-none"
+                        aria-label="Remove skill"
                       >
-                        ×
+                        <X className="h-4 w-4" />
                       </button>
                     </div>
                   ))}
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <h3 className="text-lg font-medium mb-4">Benefits & Requirements</h3>
-            
-            <div className="space-y-4">
-              <div className="space-y-4">
-                <Label>Requirements</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a requirement"
-                    value={requirementInput}
-                    onChange={(e) => setRequirementInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
-                  />
-                  <Button type="button" onClick={addRequirement}>Add</Button>
-                </div>
-                
-                <div className="space-y-2">
-                  {formData.requirements.map((req, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
-                      <span>{req}</span>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => removeRequirement(index)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <Label>Benefits</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a benefit"
-                    value={benefitInput}
-                    onChange={(e) => setBenefitInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addBenefit())}
-                  />
-                  <Button type="button" onClick={addBenefit}>Add</Button>
-                </div>
-                
-                <div className="space-y-2">
-                  {formData.benefits.map((benefit, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
-                      <span>{benefit}</span>
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => removeBenefit(index)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
+                  {formData.skills.length === 0 && (
+                    <p className="text-sm text-gray-500 italic">No skills added yet</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -481,15 +399,18 @@ We offer a dynamic work environment with opportunities for professional growth a
         
         {/* Right Column - Description & Custom Questions */}
         <div className="space-y-6">
-          <Card className="p-6">
+          <Card className="p-6 border-l-4 border-l-primary/70 shadow-md bg-gradient-to-br from-white to-gray-50">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Job Description <span className="text-red-500">*</span></h3>
+              <h3 className="text-lg font-medium text-primary flex items-center">
+                <MessageSquare className="mr-2 h-5 w-5" />
+                Job Description <span className="text-red-500">*</span>
+              </h3>
               <Button 
                 type="button" 
                 onClick={generateJobDescription}
                 disabled={isGeneratingDescription}
                 variant="outline"
-                className="flex items-center gap-2"
+                className="border-primary text-primary hover:bg-primary/10 flex items-center gap-2"
               >
                 <MessageSquare className="h-4 w-4" />
                 {isGeneratingDescription ? "Generating..." : "Generate with AI"}
@@ -503,57 +424,91 @@ We offer a dynamic work environment with opportunities for professional growth a
                 placeholder="Describe the role, responsibilities, and ideal candidate..."
                 value={formData.description}
                 onChange={handleChange}
-                className="min-h-[400px]"
+                className="min-h-[300px] border-gray-300 focus:ring-primary focus:border-primary"
                 required
               />
             </div>
           </Card>
           
-          <Card className="p-6">
+          <Card className="p-6 border-l-4 border-l-primary/50 shadow-md bg-gradient-to-br from-white to-gray-50">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Custom Questions</h3>
-              <span className="text-sm text-gray-500">{formData.customQuestions.length}/10 questions</span>
+              <h3 className="text-lg font-medium text-primary flex items-center">
+                <MessageSquare className="mr-2 h-5 w-5" />
+                Custom Questions
+              </h3>
+              <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
+                {formData.customQuestions.length}/10 questions
+              </span>
             </div>
             
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Add a custom question for candidates"
-                  value={questionInput}
-                  onChange={(e) => setQuestionInput(e.target.value)}
-                  disabled={formData.customQuestions.length >= 10}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomQuestion())}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-[1fr,auto] gap-3">
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Add a custom question for candidates"
+                    value={questionInput}
+                    onChange={(e) => setQuestionInput(e.target.value)}
+                    disabled={formData.customQuestions.length >= 10}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomQuestion())}
+                    className="border-gray-300 focus:ring-primary focus:border-primary"
+                  />
+                  <RadioGroup 
+                    value={newQuestionType} 
+                    onValueChange={(value) => setNewQuestionType(value as "text" | "yes_no")}
+                    className="flex space-x-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="text" id="text" />
+                      <Label htmlFor="text" className="cursor-pointer">Text answer</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="yes_no" id="yes_no" />
+                      <Label htmlFor="yes_no" className="cursor-pointer">Yes/No answer</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
                 <Button 
                   type="button" 
                   onClick={addCustomQuestion}
-                  disabled={formData.customQuestions.length >= 10}
+                  disabled={formData.customQuestions.length >= 10 || !questionInput.trim()}
+                  className="bg-primary hover:bg-primary/90 self-start"
                 >
+                  <Plus className="h-4 w-4 mr-1" />
                   Add
                 </Button>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-3 mt-4">
                 {formData.customQuestions.map((question, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded border">
-                    <div>
-                      <div className="font-medium">Question {index + 1}</div>
-                      <div>{question}</div>
+                  <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <div className="font-medium">Question {index + 1}</div>
+                        <div className="text-gray-700">{question.question}</div>
+                        <div className="text-sm text-primary inline-flex items-center bg-primary/10 px-2 py-0.5 rounded-full">
+                          Answer type: {question.answerType === "text" ? "Text" : "Yes/No"}
+                        </div>
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => removeCustomQuestion(index)}
+                        className="text-gray-500 hover:text-red-500"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => removeCustomQuestion(index)}
-                    >
-                      Remove
-                    </Button>
                   </div>
                 ))}
                 
                 {formData.customQuestions.length === 0 && (
-                  <div className="text-center py-6 text-gray-500">
-                    No custom questions added yet. Custom questions can help you screen candidates more effectively.
+                  <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                    <MessageSquare className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                    <p className="text-gray-500 font-medium">No custom questions added yet</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Custom questions help you screen candidates more effectively
+                    </p>
                   </div>
                 )}
               </div>
@@ -568,13 +523,14 @@ We offer a dynamic work environment with opportunities for professional growth a
           variant="outline" 
           onClick={(e) => handleSubmit(e, true)}
           disabled={isLoading}
+          className="border-primary text-primary hover:bg-primary/10"
         >
           Save as Draft
         </Button>
         <Button 
           type="submit" 
           disabled={isLoading}
-          className="gap-2"
+          className="bg-primary hover:bg-primary/90 gap-2"
         >
           <Briefcase className="h-4 w-4" />
           {isLoading ? "Submitting..." : mode === "create" ? "Post Job" : "Update Job"}
