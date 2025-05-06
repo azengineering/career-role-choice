@@ -1,12 +1,18 @@
-
-import React from "react";
+import React, { useState } from "react";
 import Header from "@/components/navigation/Header";
 import Footer from "@/components/common/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import ToolModal from "@/components/tools/ToolModal";
+import ResumeBuilder from "@/components/tools/ResumeBuilder";
+import InterviewPrep from "@/components/tools/InterviewPrep";
+import { useToast } from "@/components/ui/use-toast";
 
 const JobToolsPage: React.FC = () => {
+  const { toast } = useToast();
+  const [activeToolId, setActiveToolId] = useState<string | null>(null);
+  
   const tools = [
     {
       id: "resume-builder",
@@ -22,7 +28,8 @@ const JobToolsPage: React.FC = () => {
         "Keyword optimization for ATS systems",
         "Multiple templates and designs",
         "Export to PDF or Word format"
-      ]
+      ],
+      component: ResumeBuilder
     },
     {
       id: "interview-prep",
@@ -38,8 +45,38 @@ const JobToolsPage: React.FC = () => {
         "Role-specific question banks",
         "Real-time feedback on responses",
         "Body language and tone analysis with webcam option"
-      ]
+      ],
+      component: InterviewPrep
     },
+  ];
+
+  const handleLaunchTool = (toolId: string) => {
+    // Check if the tool is implemented
+    const tool = tools.find(t => t.id === toolId);
+    if (tool && tool.component) {
+      setActiveToolId(toolId);
+    } else {
+      toast({
+        title: "Coming Soon",
+        description: "This tool is currently under development and will be available soon!",
+        variant: "default",
+      });
+    }
+  };
+
+  // Function to render tool content based on toolId
+  const renderToolContent = (toolId: string | null) => {
+    const tool = tools.find(t => t.id === toolId);
+    if (!tool || !tool.component) return null;
+    
+    const ToolComponent = tool.component;
+    return <ToolComponent />;
+  };
+
+  // Merge the rest of the tools from the original code
+  const allTools = [
+    ...tools.slice(0, 2), // Our implemented tools
+    // Add the rest of the tools without components
     {
       id: "salary-calculator",
       name: "Salary Calculator",
@@ -132,7 +169,7 @@ const JobToolsPage: React.FC = () => {
             
             <TabsContent value="all-tools">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tools.map((tool) => (
+                {allTools.map((tool) => (
                   <Card key={tool.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
                       <div className="flex items-start justify-between">
@@ -154,7 +191,9 @@ const JobToolsPage: React.FC = () => {
                           </li>
                         ))}
                       </ul>
-                      <Button className="w-full">Launch Tool</Button>
+                      <Button className="w-full" onClick={() => handleLaunchTool(tool.id)}>
+                        Launch Tool
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}
@@ -163,7 +202,7 @@ const JobToolsPage: React.FC = () => {
             
             <TabsContent value="resume">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tools
+                {allTools
                   .filter(tool => ['resume-builder', 'skill-assessments'].includes(tool.id))
                   .map((tool) => (
                     <Card key={tool.id} className="hover:shadow-lg transition-shadow">
@@ -187,7 +226,9 @@ const JobToolsPage: React.FC = () => {
                             </li>
                           ))}
                         </ul>
-                        <Button className="w-full">Launch Tool</Button>
+                        <Button className="w-full" onClick={() => handleLaunchTool(tool.id)}>
+                          Launch Tool
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -196,7 +237,7 @@ const JobToolsPage: React.FC = () => {
             
             <TabsContent value="interview">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tools
+                {allTools
                   .filter(tool => ['interview-prep'].includes(tool.id))
                   .map((tool) => (
                     <Card key={tool.id} className="hover:shadow-lg transition-shadow">
@@ -220,7 +261,9 @@ const JobToolsPage: React.FC = () => {
                             </li>
                           ))}
                         </ul>
-                        <Button className="w-full">Launch Tool</Button>
+                        <Button className="w-full" onClick={() => handleLaunchTool(tool.id)}>
+                          Launch Tool
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -229,7 +272,7 @@ const JobToolsPage: React.FC = () => {
             
             <TabsContent value="career">
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tools
+                {allTools
                   .filter(tool => ['salary-calculator', 'networking-assistant', 'career-path-planner'].includes(tool.id))
                   .map((tool) => (
                     <Card key={tool.id} className="hover:shadow-lg transition-shadow">
@@ -253,7 +296,9 @@ const JobToolsPage: React.FC = () => {
                             </li>
                           ))}
                         </ul>
-                        <Button className="w-full">Launch Tool</Button>
+                        <Button className="w-full" onClick={() => handleLaunchTool(tool.id)}>
+                          Launch Tool
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -261,6 +306,18 @@ const JobToolsPage: React.FC = () => {
             </TabsContent>
           </Tabs>
         </div>
+        
+        {/* Tool Modal */}
+        {activeToolId && (
+          <ToolModal
+            isOpen={!!activeToolId}
+            onClose={() => setActiveToolId(null)}
+            title={allTools.find(t => t.id === activeToolId)?.name || "Tool"}
+            description={allTools.find(t => t.id === activeToolId)?.description}
+          >
+            {renderToolContent(activeToolId)}
+          </ToolModal>
+        )}
         
         <div className="bg-gray-50 py-16">
           <div className="container mx-auto px-4">
@@ -308,7 +365,7 @@ const JobToolsPage: React.FC = () => {
                       <span>5 skill assessment tests per month</span>
                     </li>
                   </ul>
-                  <Button className="w-full">Upgrade to Pro</Button>
+                  <Button className="w-full" onClick={() => toast({ title: "Coming Soon", description: "Pro plan subscriptions will be available soon!" })}>Upgrade to Pro</Button>
                 </CardContent>
               </Card>
               
@@ -348,7 +405,7 @@ const JobToolsPage: React.FC = () => {
                       <span>Unlimited skill assessments</span>
                     </li>
                   </ul>
-                  <Button variant="secondary" className="w-full">Upgrade to Premium</Button>
+                  <Button variant="secondary" className="w-full" onClick={() => toast({ title: "Coming Soon", description: "Premium plan subscriptions will be available soon!" })}>Upgrade to Premium</Button>
                 </CardContent>
               </Card>
             </div>
