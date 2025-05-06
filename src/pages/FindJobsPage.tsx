@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import Header from "@/components/navigation/Header";
 import Footer from "@/components/common/Footer";
@@ -108,7 +107,7 @@ const FindJobsPage: React.FC = () => {
   };
   
   // Handle job application
-  const handleApplyForJob = (jobId: number) => {
+  const handleApplyForJob = (jobId: string) => {
     if (!user || !user.id) {
       toast({
         title: "Authentication Required",
@@ -131,7 +130,7 @@ const FindJobsPage: React.FC = () => {
   };
   
   // Handle saving a job
-  const handleSaveJob = (jobId: number) => {
+  const handleSaveJob = (jobId: string) => {
     if (!user || !user.id) {
       toast({
         title: "Authentication Required",
@@ -418,7 +417,7 @@ const FindJobsPage: React.FC = () => {
                     <JobCard 
                       key={job.id} 
                       job={{
-                        id: job.id || 0,
+                        id: job.id || "",
                         title: job.title,
                         company: job.company,
                         location: job.location,

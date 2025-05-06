@@ -5,7 +5,7 @@ export interface CustomQuestion {
 }
 
 export interface JobPostingData {
-  id?: number | string;
+  id?: string; // Changed to string only to match DatabaseItem
   title: string;
   company: string;
   industry: string;
@@ -22,9 +22,9 @@ export interface JobPostingData {
   isDraft?: boolean;
   status?: string;
   postedDate?: string;
-  postedBy?: string; // Added postedBy for employer ID
-  applications?: number; // Added applications count
-  views?: number; // Added views count
+  postedBy?: string;
+  applications?: number;
+  views?: number;
   tags?: string[];
   matchScore?: number;
   // DatabaseItem properties

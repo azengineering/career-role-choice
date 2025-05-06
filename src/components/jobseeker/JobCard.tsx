@@ -8,7 +8,7 @@ import { Share } from "lucide-react";
 
 interface JobCardProps {
   job: {
-    id: number;
+    id: string;
     title: string;
     company: string;
     location: string;
