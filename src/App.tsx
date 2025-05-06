@@ -72,6 +72,7 @@ const AppRoutes = () => (
       <Route path="/job-seeker" element={<RoleRoute role="job-seeker"><JobSeekerHome /></RoleRoute>} />
       <Route path="/job-seeker/about" element={<RoleRoute role="job-seeker"><AboutPage userType="job-seeker" /></RoleRoute>} />
       <Route path="/job-seeker/find-jobs" element={<RoleRoute role="job-seeker"><FindJobsPage /></RoleRoute>} />
+      <Route path="/job-seeker/job/:jobId" element={<RoleRoute role="job-seeker"><FindJobsPage /></RoleRoute>} />
       <Route path="/job-seeker/job-tools" element={<RoleRoute role="job-seeker"><JobToolsPage /></RoleRoute>} />
       <Route path="/job-seeker/dashboard" element={<ProtectedRoute requiredRole="job-seeker"><JobSeekerDashboard /></ProtectedRoute>} />
       
@@ -79,6 +80,8 @@ const AppRoutes = () => (
       <Route path="/employer" element={<RoleRoute role="employer"><EmployerHome /></RoleRoute>} />
       <Route path="/employer/about" element={<RoleRoute role="employer"><AboutPage userType="employer" /></RoleRoute>} />
       <Route path="/employer/post-jobs" element={<RoleRoute role="employer"><PostJobsPage /></RoleRoute>} />
+      <Route path="/employer/edit-job/:jobId" element={<ProtectedRoute requiredRole="employer"><PostJobsPage /></ProtectedRoute>} />
+      <Route path="/employer/applications/:jobId" element={<ProtectedRoute requiredRole="employer"><EmployerDashboard /></ProtectedRoute>} />
       <Route path="/employer/recruiter-tools" element={<RoleRoute role="employer"><RecruiterToolsPage /></RoleRoute>} />
       <Route path="/employer/dashboard" element={<ProtectedRoute requiredRole="employer"><EmployerDashboard /></ProtectedRoute>} />
       

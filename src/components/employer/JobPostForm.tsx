@@ -19,7 +19,7 @@ interface JobPostFormProps {
 const JobPostForm: React.FC<JobPostFormProps> = ({ 
   initialData = {
     title: "",
-    company: "", // Added missing company field
+    company: "", 
     industry: "",
     location: "",
     type: "",
@@ -199,6 +199,18 @@ We offer a dynamic work environment with opportunities for professional growth a
       setIsLoading(false);
     }
   };
+
+  // Prepare preview data for the FormActions component
+  const previewData = formData.title ? {
+    title: formData.title,
+    company: formData.company || "Company Name",
+    location: formData.location,
+    type: formData.type,
+    minSalary: formData.minSalary,
+    maxSalary: formData.maxSalary,
+    description: formData.description,
+    skills: formData.skills
+  } : undefined;
   
   return (
     <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
@@ -242,6 +254,7 @@ We offer a dynamic work environment with opportunities for professional growth a
         isLoading={isLoading}
         mode={mode}
         handleSubmit={handleSubmit}
+        previewData={previewData}
       />
     </form>
   );

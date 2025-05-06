@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { Share } from "lucide-react";
 
 interface JobCardProps {
   job: {
@@ -18,9 +19,11 @@ interface JobCardProps {
     posted: string;
     matchScore: number;
   };
+  onApply?: () => boolean;
+  onSave?: () => boolean;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ job }) => {
+const JobCard: React.FC<JobCardProps> = ({ job, onApply, onSave }) => {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -36,11 +39,16 @@ const JobCard: React.FC<JobCardProps> = ({ job }) => {
       return;
     }
 
-    // In a real app, this would submit an application
-    toast({
-      title: "Application Submitted",
-      description: `You have successfully applied for ${job.title} at ${job.company}.`,
-    });
+    // Call the onApply callback if provided
+    if (onApply && onApply()) {
+      // Success handling is done in the parent component
+    } else {
+      // Fallback for when no callback is provided
+      toast({
+        title: "Application Submitted",
+        description: `You have successfully applied for ${job.title} at ${job.company}.`,
+      });
+    }
   };
 
   const handleSaveJob = () => {
@@ -54,11 +62,40 @@ const JobCard: React.FC<JobCardProps> = ({ job }) => {
       return;
     }
 
-    // In a real app, this would save the job to the user's profile
-    toast({
-      title: "Job Saved",
-      description: `${job.title} has been saved to your profile.`,
-    });
+    // Call the onSave callback if provided
+    if (onSave && onSave()) {
+      // Success handling is done in the parent component
+    } else {
+      // Fallback for when no callback is provided
+      toast({
+        title: "Job Saved",
+        description: `${job.title} has been saved to your profile.`,
+      });
+    }
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: `${job.title} at ${job.company}`,
+        text: `Check out this job opportunity: ${job.title} at ${job.company}`,
+        url: window.location.href,
+      }).catch((error) => {
+        toast({
+          title: "Sharing Failed",
+          description: "There was an error sharing this job posting.",
+          variant: "destructive",
+        });
+      });
+    } else {
+      // Fallback for browsers that don't support navigator.share
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        toast({
+          title: "Link Copied",
+          description: "Job link has been copied to your clipboard.",
+        });
+      });
+    }
   };
 
   return (
@@ -110,9 +147,9 @@ const JobCard: React.FC<JobCardProps> = ({ job }) => {
         </p>
         
         <div className="flex flex-wrap gap-2 mb-6">
-          {job.tags.map((tag) => (
+          {job.tags.map((tag, index) => (
             <span
-              key={tag}
+              key={index}
               className="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded"
             >
               {tag}
@@ -126,6 +163,14 @@ const JobCard: React.FC<JobCardProps> = ({ job }) => {
           </Button>
           <Button variant="outline" className="sm:w-auto" onClick={handleSaveJob}>
             Save Job
+          </Button>
+          <Button 
+            variant="outline" 
+            className="sm:w-auto" 
+            onClick={handleShare} 
+            title="Share this job"
+          >
+            <Share className="h-4 w-4" />
           </Button>
         </div>
       </div>

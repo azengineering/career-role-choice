@@ -11,6 +11,8 @@ import ScrollToTop from "@/components/common/ScrollToTop";
 import { JobPostingData } from "@/components/employer/JobPostFormTypes";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Filter } from "lucide-react";
+import { getAllJobs, saveJob, applyForJob } from "@/services/jobService";
+import { useAuth } from "@/context/AuthContext";
 
 const FindJobsPage: React.FC = () => {
   const [jobListings, setJobListings] = useState<JobPostingData[]>([]);
@@ -24,133 +26,24 @@ const FindJobsPage: React.FC = () => {
   const [sortOrder, setSortOrder] = useState("relevance");
   
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
-    // In a real app, this would fetch from an API
-    // Here we're simulating fetching job listings
+    // Fetch real jobs from our local database
     const fetchJobs = async () => {
       setIsLoading(true);
       try {
-        // Mock data - in a real app, this would be an API call
-        // Transforming the mock data to match our JobPostingData interface
-        const mockJobs: JobPostingData[] = [
-          {
-            id: 1,
-            title: "Front-end Developer",
-            company: "TechCorp",
-            location: "San Francisco, CA",
-            type: "Full-time",
-            minSalary: 90,
-            maxSalary: 120,
-            minExperience: 2,
-            maxExperience: 5,
-            description: "We are seeking a skilled Front-end Developer to join our team and create responsive, user-friendly web applications. The ideal candidate should have experience with React, TypeScript, and modern CSS frameworks.",
-            skills: ["React", "TypeScript", "Tailwind CSS"],
-            vacancies: 2,
-            industry: "Technology",
-            customQuestions: [],
-            postedDate: "2024-05-03", // 2 days ago
-            tags: ["React", "TypeScript", "Tailwind CSS"],
-            matchScore: 95
-          },
-          {
-            id: 2,
-            title: "Product Manager",
-            company: "InnovateTech",
-            location: "Remote",
-            type: "Full-time",
-            minSalary: 100,
-            maxSalary: 150,
-            minExperience: 3,
-            maxExperience: 7,
-            description: "Join our product team and help shape the future of our platform. You'll work closely with engineering, design, and marketing to deliver features that delight our users.",
-            skills: ["Product Strategy", "Agile", "User Research"],
-            vacancies: 1,
-            industry: "Technology",
-            customQuestions: [],
-            postedDate: "2024-04-28", // 1 week ago
-            tags: ["Product Strategy", "Agile", "User Research"],
-            matchScore: 88
-          },
-          {
-            id: 3,
-            title: "Marketing Specialist",
-            company: "GrowthHackers",
-            location: "New York, NY",
-            type: "Full-time",
-            minSalary: 75,
-            maxSalary: 95,
-            minExperience: 1,
-            maxExperience: 4,
-            description: "Drive our marketing initiatives and help us reach new audiences. The ideal candidate will have experience with digital marketing, content creation, and analytics.",
-            skills: ["Digital Marketing", "Content Strategy", "Analytics"],
-            vacancies: 3,
-            industry: "Marketing",
-            customQuestions: [],
-            postedDate: "2024-05-02", // 3 days ago
-            tags: ["Digital Marketing", "Content Strategy", "Analytics"],
-            matchScore: 82
-          },
-          {
-            id: 4,
-            title: "UX Designer",
-            company: "DesignLab",
-            location: "Austin, TX",
-            type: "Full-time",
-            minSalary: 85,
-            maxSalary: 110,
-            minExperience: 2,
-            maxExperience: 6,
-            description: "Create intuitive, engaging user experiences for our suite of products. You'll conduct user research, create wireframes and prototypes, and collaborate with developers to bring your designs to life.",
-            skills: ["UI/UX", "Figma", "User Testing"],
-            vacancies: 1,
-            industry: "Design",
-            customQuestions: [],
-            postedDate: "2024-05-05", // Just now
-            tags: ["UI/UX", "Figma", "User Testing"],
-            matchScore: 91
-          },
-          {
-            id: 5,
-            title: "Data Analyst",
-            company: "DataDriven",
-            location: "Chicago, IL",
-            type: "Full-time",
-            minSalary: 80,
-            maxSalary: 100,
-            minExperience: 1,
-            maxExperience: 3,
-            description: "Transform complex data into actionable insights. You'll work with large datasets, build dashboards, and help teams make data-driven decisions.",
-            skills: ["SQL", "Python", "Data Visualization"],
-            vacancies: 2,
-            industry: "Data",
-            customQuestions: [],
-            postedDate: "2024-04-30", // 5 days ago
-            tags: ["SQL", "Python", "Data Visualization"],
-            matchScore: 79
-          },
-          {
-            id: 6,
-            title: "Customer Success Manager",
-            company: "SupportPro",
-            location: "Remote",
-            type: "Full-time",
-            minSalary: 70,
-            maxSalary: 90,
-            minExperience: 2,
-            maxExperience: 5,
-            description: "Ensure our customers achieve their goals using our product. You'll onboard new users, provide training, and serve as their advocate within the company.",
-            skills: ["Customer Service", "SaaS", "Relationship Management"],
-            vacancies: 1,
-            industry: "Customer Service",
-            customQuestions: [],
-            postedDate: "2024-04-21", // 2 weeks ago
-            tags: ["Customer Service", "SaaS", "Relationship Management"],
-            matchScore: 86
-          },
-        ];
+        // Get all active jobs
+        const allJobs = getAllJobs();
+        const activeJobs = allJobs.filter(job => job.status === "Active");
         
-        setJobListings(mockJobs);
+        // Calculate a random match score for each job for demo purposes
+        const jobsWithMatchScore = activeJobs.map(job => ({
+          ...job,
+          matchScore: job.matchScore || Math.floor(Math.random() * 30) + 70
+        }));
+        
+        setJobListings(jobsWithMatchScore);
         setIsLoading(false);
       } catch (error) {
         toast({
@@ -185,7 +78,6 @@ const FindJobsPage: React.FC = () => {
 
   // Apply filters
   const applyFilters = () => {
-    // In a real app, this would update an API call with filter parameters
     toast({
       title: "Filters applied",
       description: "Job listings have been filtered based on your criteria.",
@@ -213,6 +105,57 @@ const FindJobsPage: React.FC = () => {
   // Format salary range
   const formatSalaryRange = (min: number, max: number) => {
     return `₹${min} - ${max} LPA`;
+  };
+  
+  // Handle job application
+  const handleApplyForJob = (jobId: number) => {
+    if (!user || !user.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to apply for jobs.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    const success = applyForJob(jobId, user.id);
+    
+    if (success) {
+      toast({
+        title: "Application Submitted",
+        description: "You have successfully applied for this job.",
+      });
+    }
+    
+    return success;
+  };
+  
+  // Handle saving a job
+  const handleSaveJob = (jobId: number) => {
+    if (!user || !user.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to save jobs.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    const success = saveJob(jobId, user.id);
+    
+    if (success) {
+      toast({
+        title: "Job Saved",
+        description: "This job has been saved to your dashboard.",
+      });
+    } else {
+      toast({
+        title: "Already Saved",
+        description: "You have already saved this job.",
+      });
+    }
+    
+    return success;
   };
 
   // Filter jobs based on search term and filters
@@ -485,7 +428,9 @@ const FindJobsPage: React.FC = () => {
                         tags: job.tags || job.skills,
                         posted: formatPostedDate(job.postedDate),
                         matchScore: job.matchScore || Math.floor(Math.random() * 30) + 70
-                      }} 
+                      }}
+                      onApply={() => handleApplyForJob(job.id!)}
+                      onSave={() => handleSaveJob(job.id!)}
                     />
                   ))}
                 </div>
@@ -508,7 +453,7 @@ const FindJobsPage: React.FC = () => {
                 </div>
               )}
               
-              {filteredJobs.length > 0 && (
+              {filteredJobs.length > 0 && filteredJobs.length > 10 && (
                 <div className="mt-8 flex justify-center">
                   <Button variant="outline" className="mr-2">&lt; Previous</Button>
                   <Button variant="outline" className="mx-1">1</Button>

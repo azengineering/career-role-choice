@@ -1,0 +1,110 @@
+
+import { db } from './localStorageDB';
+import { JobPostingData } from '@/components/employer/JobPostFormTypes';
+
+// Get all jobs
+export const getAllJobs = () => {
+  return db.getAll<JobPostingData>('jobs');
+};
+
+// Get jobs by employer ID
+export const getJobsByEmployer = (employerId: string) => {
+  return db.query<JobPostingData>('jobs', job => job.postedBy === employerId);
+};
+
+// Get job by ID
+export const getJobById = (jobId: number | string) => {
+  return db.getById<JobPostingData>('jobs', jobId);
+};
+
+// Update job
+export const updateJob = (jobId: number | string, updates: Partial<JobPostingData>) => {
+  return db.update<JobPostingData>('jobs', jobId, updates);
+};
+
+// Delete job
+export const deleteJob = (jobId: number | string) => {
+  return db.delete('jobs', jobId);
+};
+
+// Apply for job
+export const applyForJob = (jobId: number | string, userId: string) => {
+  // Get the job
+  const job = db.getById<JobPostingData>('jobs', jobId);
+  
+  if (!job) return false;
+  
+  // Update applications count
+  db.update<JobPostingData>('jobs', jobId, {
+    applications: (job.applications || 0) + 1
+  });
+  
+  // Store the application in 'applications' table
+  db.add('applications', {
+    jobId,
+    userId,
+    jobTitle: job.title,
+    company: job.company,
+    appliedDate: new Date().toISOString().split('T')[0],
+    status: 'Applied'
+  });
+  
+  return true;
+};
+
+// Save job
+export const saveJob = (jobId: number | string, userId: string) => {
+  // Get the job
+  const job = db.getById<JobPostingData>('jobs', jobId);
+  
+  if (!job) return false;
+  
+  // Check if already saved
+  const existing = db.query('saved_jobs', item => 
+    item.jobId == jobId && item.userId === userId
+  );
+  
+  if (existing.length > 0) return false;
+  
+  // Store in 'saved_jobs' table
+  db.add('saved_jobs', {
+    jobId,
+    userId,
+    jobTitle: job.title,
+    company: job.company,
+    savedDate: new Date().toISOString().split('T')[0],
+    location: job.location,
+    salary: `${job.minSalary} - ${job.maxSalary} LPA`
+  });
+  
+  return true;
+};
+
+// Get saved jobs for a user
+export const getSavedJobs = (userId: string) => {
+  return db.query('saved_jobs', item => item.userId === userId);
+};
+
+// Get applied jobs for a user
+export const getAppliedJobs = (userId: string) => {
+  return db.query('applications', item => item.userId === userId);
+};
+
+// Remove saved job
+export const removeSavedJob = (jobId: number | string, userId: string) => {
+  const savedJobs = db.query('saved_jobs', item => 
+    item.jobId == jobId && item.userId === userId
+  );
+  
+  if (savedJobs.length === 0) return false;
+  
+  db.delete('saved_jobs', savedJobs[0].id);
+  return true;
+};
+
+// Get job applications for an employer
+export const getJobApplications = (jobIds: (number | string)[]) => {
+  return db.query('applications', application => 
+    jobIds.includes(application.jobId)
+  );
+};
