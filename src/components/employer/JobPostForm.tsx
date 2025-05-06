@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -11,7 +10,7 @@ import { db } from "@/services/localStorageDB";
 import { useAuth } from "@/context/AuthContext";
 
 interface JobPostFormProps {
-  initialData?: JobPostingData;
+  initialData?: Partial<JobPostingData>;
   mode?: "create" | "edit";
   onSubmit?: (data: JobPostingData) => void;
 }
@@ -35,7 +34,12 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
   mode = "create",
   onSubmit 
 }) => {
-  const [formData, setFormData] = useState<JobPostingData>(initialData);
+  // We need to ensure id is always present in formData
+  const [formData, setFormData] = useState<JobPostingData>({
+    id: initialData.id || Date.now().toString(), // Provide a default id if not present
+    ...initialData as any // Cast to any to avoid TS errors with partial data
+  } as JobPostingData);
+  
   const [skillInput, setSkillInput] = useState("");
   const [questionInput, setQuestionInput] = useState("");
   const [newQuestionType, setNewQuestionType] = useState<"text" | "yes_no">("text");
@@ -161,13 +165,15 @@ We offer a dynamic work environment with opportunities for professional growth a
     
     try {
       // Add additional metadata
-      const finalData = {
+      const finalData: JobPostingData = {
         ...formData,
         status: asDraft ? "Draft" : "Active",
         postedDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
         postedBy: user?.id || 'unknown',
-        applications: 0,
-        views: 0
+        applications: formData.applications || 0,
+        views: formData.views || 0,
+        createdAt: formData.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       
       // Save to our local database

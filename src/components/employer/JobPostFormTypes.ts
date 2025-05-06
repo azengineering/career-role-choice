@@ -5,7 +5,7 @@ export interface CustomQuestion {
 }
 
 export interface JobPostingData {
-  id?: string; // Changed to string only to match DatabaseItem
+  id: string; // Changed from optional to required
   title: string;
   company: string;
   industry: string;
