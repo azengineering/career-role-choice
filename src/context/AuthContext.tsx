@@ -1,6 +1,7 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { db, UserData } from "@/services/localStorageDB";
 
 export type UserRole = "job-seeker" | "employer" | null;
 
@@ -26,24 +27,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user database for demo
-const mockUsers = [
-  {
-    id: "1",
-    email: "jobseeker@example.com",
-    password: "password123",
-    role: "job-seeker" as UserRole,
-    name: "John Doe"
-  },
-  {
-    id: "2",
-    email: "employer@example.com",
-    password: "password123",
-    role: "employer" as UserRole,
-    name: "Jane Smith"
-  }
-];
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>(null);
@@ -57,15 +40,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     try {
-      // In a real app, this would make an API call to authenticate
       console.log(`Login attempt with email: ${email}, password: ${password}, role: ${role}`);
       
-      // Simulate server validation
-      const foundUser = mockUsers.find(
-        u => u.email.toLowerCase() === email.toLowerCase() && u.password === password && u.role === role
+      // Use our local database to find the user
+      const users = db.query<UserData>('users', u => 
+        u.email.toLowerCase() === email.toLowerCase() && 
+        u.password === password && 
+        u.role === role
       );
       
-      if (!foundUser) {
+      if (users.length === 0) {
         toast({
           title: "Login Failed",
           description: "Invalid email, password, or role. Please try again.",
@@ -74,16 +58,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return false;
       }
       
+      const foundUser = users[0];
+      
       // Login successful
-      const { password: _, ...userWithoutPassword } = foundUser;
+      const userWithoutPassword = {
+        id: foundUser.id,
+        email: foundUser.email,
+        role: foundUser.role,
+        name: foundUser.name
+      };
       
       setIsAuthenticated(true);
-      setUserRole(role);
+      setUserRole(foundUser.role);
       setUser(userWithoutPassword);
       
       // Store in local storage for persistence
       localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userRole", role || "");
+      localStorage.setItem("userRole", foundUser.role || "");
       localStorage.setItem("user", JSON.stringify(userWithoutPassword));
       
       toast({
@@ -105,13 +96,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signup = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     try {
-      // In a real app, this would make an API call to register
       console.log(`Signup attempt with email: ${email}, password: ${password}, role: ${role}`);
       
-      // Check if user already exists in our mock database
-      const userExists = mockUsers.some(u => u.email.toLowerCase() === email.toLowerCase());
+      // Check if user already exists in our database
+      const existingUsers = db.query<UserData>('users', u => 
+        u.email.toLowerCase() === email.toLowerCase()
+      );
       
-      if (userExists) {
+      if (existingUsers.length > 0) {
         toast({
           title: "Signup Failed",
           description: "A user with this email already exists.",
@@ -120,20 +112,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return false;
       }
       
-      // Create a new user (in a real app, this would save to a database)
-      const newUser = {
-        id: `${mockUsers.length + 1}`,
+      // Create a new user
+      const name = email.split('@')[0]; // Simple name generation for demo
+      
+      const newUser = db.add<UserData>('users', {
         email,
         password,
-        role,
-        name: email.split('@')[0] // Simple name generation for demo
+        role: role as "job-seeker" | "employer", // Type assertion since we know it's one of these values
+        name
+      });
+      
+      // Create user object without password
+      const userWithoutPassword = {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+        name: newUser.name
       };
-      
-      // In a real app, we would add the user to the database here
-      // mockUsers.push(newUser);
-      
-      // Simulate successful signup
-      const { password: _, ...userWithoutPassword } = newUser;
       
       setIsAuthenticated(true);
       setUserRole(role);

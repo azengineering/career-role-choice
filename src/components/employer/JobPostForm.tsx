@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -6,6 +7,8 @@ import JobDescription from "./job-post/JobDescription";
 import CustomQuestions from "./job-post/CustomQuestions";
 import FormActions from "./job-post/FormActions";
 import { JobPostingData, CustomQuestion } from "./JobPostFormTypes";
+import { db } from "@/services/localStorageDB";
+import { useAuth } from "@/context/AuthContext";
 
 interface JobPostFormProps {
   initialData?: JobPostingData;
@@ -41,6 +44,7 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
   
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -155,16 +159,21 @@ We offer a dynamic work environment with opportunities for professional growth a
     
     setIsLoading(true);
     
-    // Add additional metadata
-    const finalData = {
-      ...formData,
-      isDraft: asDraft,
-      status: asDraft ? "Draft" : "Active",
-      postedDate: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
-    };
-    
-    // In a real app, this would save to a database
-    setTimeout(() => {
+    try {
+      // Add additional metadata
+      const finalData = {
+        ...formData,
+        status: asDraft ? "Draft" : "Active",
+        postedDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+        postedBy: user?.id || 'unknown',
+        applications: 0,
+        views: 0
+      };
+      
+      // Save to our local database
+      db.add('jobs', finalData);
+      
+      // Call onSubmit if provided (for testing/mock)
       if (onSubmit) {
         onSubmit(finalData);
       } else {
@@ -176,10 +185,19 @@ We offer a dynamic work environment with opportunities for professional growth a
           variant: asDraft ? "default" : "default",
         });
         
+        // Redirect to dashboard
         navigate("/employer/dashboard");
       }
+    } catch (error) {
+      console.error("Error saving job:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem saving your job posting. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
   
   return (
