@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 interface FormActionsProps {
   isLoading: boolean;
@@ -24,6 +25,10 @@ interface FormActionsProps {
     maxSalary: number;
     description: string;
     skills: string[];
+    isRemote?: boolean;
+    isUrgent?: boolean;
+    isFeatured?: boolean;
+    benefits?: string[];
   };
 }
 
@@ -86,6 +91,17 @@ const FormActions: React.FC<FormActionsProps> = ({
           {previewData && (
             <div className="mt-4 space-y-6">
               <div>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  {previewData.isUrgent && (
+                    <Badge className="bg-red-500">URGENT</Badge>
+                  )}
+                  {previewData.isFeatured && (
+                    <Badge className="bg-amber-500">FEATURED</Badge>
+                  )}
+                  {previewData.isRemote && (
+                    <Badge className="bg-green-500">REMOTE</Badge>
+                  )}
+                </div>
                 <h2 className="text-2xl font-bold">{previewData.title}</h2>
                 <div className="flex flex-wrap items-center gap-2 mt-2 text-gray-600">
                   <span>{previewData.company}</span>
@@ -103,6 +119,19 @@ const FormActions: React.FC<FormActionsProps> = ({
                 </p>
               </div>
               
+              {previewData.benefits && previewData.benefits.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Benefits & Perks</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {previewData.benefits.map((benefit, index) => (
+                      <Badge key={index} variant="outline" className="text-green-600 bg-green-50 border-green-200">
+                        {benefit}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               <div>
                 <h3 className="text-lg font-semibold mb-2">Skills</h3>
                 <div className="flex flex-wrap gap-2">
@@ -111,6 +140,8 @@ const FormActions: React.FC<FormActionsProps> = ({
                   ))}
                 </div>
               </div>
+              
+              <Separator />
               
               <div>
                 <h3 className="text-lg font-semibold mb-2">Job Description</h3>

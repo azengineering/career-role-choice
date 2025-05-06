@@ -19,6 +19,11 @@ export interface JobPostingData {
   vacancies: number;
   description: string;
   customQuestions: CustomQuestion[];
+  benefits?: string[];
+  isRemote?: boolean;
+  isUrgent?: boolean;
+  isFeatured?: boolean;
+  applicationDeadline?: string;
   isDraft?: boolean;
   status?: string;
   postedDate?: string;

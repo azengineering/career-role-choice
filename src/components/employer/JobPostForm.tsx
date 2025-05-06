@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -8,6 +9,11 @@ import FormActions from "./job-post/FormActions";
 import { JobPostingData, CustomQuestion } from "./JobPostFormTypes";
 import { db } from "@/services/localStorageDB";
 import { useAuth } from "@/context/AuthContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface JobPostFormProps {
   initialData?: Partial<JobPostingData>;
@@ -29,7 +35,12 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
     skills: [],
     vacancies: 1,
     description: "",
-    customQuestions: []
+    customQuestions: [],
+    benefits: [],
+    isRemote: false,
+    isUrgent: false,
+    isFeatured: false,
+    applicationDeadline: ""
   }, 
   mode = "create",
   onSubmit 
@@ -45,10 +56,12 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
   } as JobPostingData);
   
   const [skillInput, setSkillInput] = useState("");
+  const [benefitInput, setBenefitInput] = useState("");
   const [questionInput, setQuestionInput] = useState("");
   const [newQuestionType, setNewQuestionType] = useState<"text" | "yes_no">("text");
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -68,6 +81,9 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleCheckboxChange = (name: string, checked: boolean) => {
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
   
   const addSkill = () => {
     if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
@@ -85,7 +101,23 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
       skills: prev.skills.filter((_, i) => i !== index)
     }));
   };
+
+  const addBenefit = () => {
+    if (benefitInput.trim() && !formData.benefits?.includes(benefitInput.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        benefits: [...(prev.benefits || []), benefitInput.trim()]
+      }));
+      setBenefitInput("");
+    }
+  };
   
+  const removeBenefit = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      benefits: prev.benefits?.filter((_, i) => i !== index) || []
+    }));
+  };
   
   const addCustomQuestion = () => {
     if (questionInput.trim() && formData.customQuestions.length < 10) {
@@ -134,7 +166,7 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
       
       const generatedDesc = `We are looking for a talented ${formData.title} to join our team in the ${formData.industry} industry. The ideal candidate will have ${experience} of experience and proficiency in ${skills || "relevant skills"}. 
 
-This role is based in ${formData.location || "our office location"} and offers a competitive salary range between ${formData.minSalary} LPA and ${formData.maxSalary} LPA per year.
+This role is based in ${formData.location || "our office location"}${formData.isRemote ? " with remote work options available" : ""} and offers a competitive salary range between ${formData.minSalary} LPA and ${formData.maxSalary} LPA per year.
 
 Key Responsibilities:
 • Collaborate with cross-functional teams to deliver high-quality solutions
@@ -211,7 +243,6 @@ We offer a dynamic work environment with opportunities for professional growth a
     }
   };
 
-  
   // Prepare preview data for the FormActions component
   const previewData = formData.title ? {
     title: formData.title,
@@ -221,46 +252,154 @@ We offer a dynamic work environment with opportunities for professional growth a
     minSalary: formData.minSalary,
     maxSalary: formData.maxSalary,
     description: formData.description,
-    skills: formData.skills
+    skills: formData.skills,
+    isRemote: formData.isRemote,
+    isUrgent: formData.isUrgent,
+    isFeatured: formData.isFeatured,
+    benefits: formData.benefits || []
   } : undefined;
   
   return (
     <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left Column - Basic Details */}
-        <div className="space-y-6">
-          <BasicJobDetails 
-            formData={formData}
-            skillInput={skillInput}
-            setSkillInput={setSkillInput}
-            handleChange={handleChange}
-            handleNumberChange={handleNumberChange}
-            handleSelectChange={handleSelectChange}
-            addSkill={addSkill}
-            removeSkill={removeSkill}
-          />
-        </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="w-full grid grid-cols-4 mb-6">
+          <TabsTrigger value="basic">Basic Info</TabsTrigger>
+          <TabsTrigger value="description">Description</TabsTrigger>
+          <TabsTrigger value="extras">Additional Info</TabsTrigger>
+          <TabsTrigger value="questions">Screening Questions</TabsTrigger>
+        </TabsList>
         
-        {/* Right Column - Description & Custom Questions */}
-        <div className="space-y-6">
-          <JobDescription 
-            description={formData.description}
-            handleChange={handleChange}
-            generateJobDescription={generateJobDescription}
-            isGeneratingDescription={isGeneratingDescription}
-          />
-          
-          <CustomQuestions 
-            customQuestions={formData.customQuestions}
-            questionInput={questionInput}
-            setQuestionInput={setQuestionInput}
-            newQuestionType={newQuestionType}
-            setNewQuestionType={setNewQuestionType}
-            addCustomQuestion={addCustomQuestion}
-            removeCustomQuestion={removeCustomQuestion}
-          />
-        </div>
-      </div>
+        <TabsContent value="basic" className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-6">
+                <BasicJobDetails 
+                  formData={formData}
+                  skillInput={skillInput}
+                  setSkillInput={setSkillInput}
+                  handleChange={handleChange}
+                  handleNumberChange={handleNumberChange}
+                  handleSelectChange={handleSelectChange}
+                  addSkill={addSkill}
+                  removeSkill={removeSkill}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="description" className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <JobDescription 
+                description={formData.description}
+                handleChange={handleChange}
+                generateJobDescription={generateJobDescription}
+                isGeneratingDescription={isGeneratingDescription}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="extras" className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Job Benefits & Options</h3>
+                
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="isRemote" 
+                      checked={formData.isRemote}
+                      onCheckedChange={(checked) => handleCheckboxChange("isRemote", checked as boolean)}
+                    />
+                    <Label htmlFor="isRemote">Remote Work Available</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="isUrgent" 
+                      checked={formData.isUrgent}
+                      onCheckedChange={(checked) => handleCheckboxChange("isUrgent", checked as boolean)}
+                    />
+                    <Label htmlFor="isUrgent">Urgent Hiring</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="isFeatured" 
+                      checked={formData.isFeatured}
+                      onCheckedChange={(checked) => handleCheckboxChange("isFeatured", checked as boolean)}
+                    />
+                    <Label htmlFor="isFeatured">Feature this Job (Highlighted in search results)</Label>
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  <Label htmlFor="applicationDeadline">Application Deadline</Label>
+                  <Input
+                    id="applicationDeadline"
+                    name="applicationDeadline"
+                    type="date"
+                    value={formData.applicationDeadline || ""}
+                    onChange={handleChange}
+                    className="mt-1"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Leave empty if there's no deadline</p>
+                </div>
+                
+                <div className="mt-6">
+                  <h4 className="font-medium mb-2">Benefits & Perks</h4>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      placeholder="Add a benefit or perk (e.g., Health Insurance)"
+                      value={benefitInput}
+                      onChange={(e) => setBenefitInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addBenefit())}
+                      className="flex-1"
+                    />
+                    <Button variant="default" type="button" onClick={addBenefit} className="shrink-0">
+                      Add
+                    </Button>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {formData.benefits?.map((benefit, index) => (
+                      <div key={index} className="bg-primary-100 text-primary-800 rounded-full px-3 py-1 text-sm flex items-center">
+                        <span>{benefit}</span>
+                        <button 
+                          type="button"
+                          className="ml-2 text-primary-600 hover:text-primary-800"
+                          onClick={() => removeBenefit(index)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="questions" className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <CustomQuestions 
+                customQuestions={formData.customQuestions}
+                questionInput={questionInput}
+                setQuestionInput={setQuestionInput}
+                newQuestionType={newQuestionType}
+                setNewQuestionType={setNewQuestionType}
+                addCustomQuestion={addCustomQuestion}
+                removeCustomQuestion={removeCustomQuestion}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
       
       <FormActions 
         isLoading={isLoading}

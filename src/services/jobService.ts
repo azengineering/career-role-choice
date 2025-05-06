@@ -28,7 +28,7 @@ export const deleteJob = (jobId: string | number) => {
 };
 
 // Apply for job
-export const applyForJob = (jobId: string | number, userId: string) => {
+export const applyForJob = (jobId: string | number, userId: string, applicationData: any = {}) => {
   // Get the job
   const job = db.getById<JobPostingData>('jobs', String(jobId));
   
@@ -39,17 +39,26 @@ export const applyForJob = (jobId: string | number, userId: string) => {
     applications: (job.applications || 0) + 1
   });
   
+  // Generate a match score based on skills match (simplified example)
+  const matchScore = applicationData.skills ? 
+    Math.floor(Math.random() * 40) + 60 : // With skills, score between 60-100
+    Math.floor(Math.random() * 60) + 40;  // Without skills, score between 40-100
+  
   // Store the application in 'applications' table
+  const applicationId = Date.now().toString();
   db.add('applications', {
+    id: applicationId,
     jobId: String(jobId),
     userId,
     jobTitle: job.title,
     company: job.company,
     appliedDate: new Date().toISOString().split('T')[0],
-    status: 'Applied'
+    status: 'Applied',
+    matchScore,
+    ...applicationData
   });
   
-  return true;
+  return applicationId;
 };
 
 // Save job
@@ -68,13 +77,16 @@ export const saveJob = (jobId: string | number, userId: string) => {
   
   // Store in 'saved_jobs' table
   db.add('saved_jobs', {
+    id: Date.now().toString(),
     jobId: String(jobId),
     userId,
     jobTitle: job.title,
     company: job.company,
     savedDate: new Date().toISOString().split('T')[0],
     location: job.location,
-    salary: `${job.minSalary} - ${job.maxSalary} LPA`
+    salary: `${job.minSalary} - ${job.maxSalary} LPA`,
+    type: job.type,
+    isRemote: job.isRemote
   });
   
   return true;
@@ -107,4 +119,50 @@ export const getJobApplications = (jobIds: (string | number)[]) => {
   return db.query('applications', application => 
     jobIds.some(id => (application as any).jobId === String(id))
   );
+};
+
+// Get job applications for a specific job
+export const getJobApplicationsByJobId = (jobId: string | number) => {
+  return db.query('applications', application => (application as any).jobId === String(jobId));
+};
+
+// Update application status
+export const updateApplicationStatus = (applicationId: string, status: string) => {
+  return db.update('applications', applicationId, { status });
+};
+
+// Get a single application by ID
+export const getApplicationById = (applicationId: string) => {
+  return db.getById('applications', applicationId);
+};
+
+// Check if a user has already applied to a job
+export const hasApplied = (jobId: string | number, userId: string) => {
+  const applications = db.query('applications', application => 
+    (application as any).jobId === String(jobId) && (application as any).userId === userId
+  );
+  return applications.length > 0;
+};
+
+// Get suggested jobs based on user profile and applied jobs
+export const getSuggestedJobs = (userId: string, limit = 5) => {
+  // Get user's applied jobs to extract skills/industries
+  const appliedJobs = getAppliedJobs(userId);
+  
+  // In a real app, we would analyze user profile and applied jobs
+  // For this mock, just return random active jobs that the user hasn't applied to
+  const allJobs = getAllJobs().filter(job => job.status === "Active");
+  
+  // Filter out jobs user has already applied to
+  const appliedJobIds = appliedJobs.map(job => (job as any).jobId);
+  const unappliedJobs = allJobs.filter(job => !appliedJobIds.includes(job.id));
+  
+  // Return a random subset with match scores
+  return unappliedJobs
+    .map(job => ({
+      ...job,
+      matchScore: Math.floor(Math.random() * 40) + 60 // Random score between 60-100
+    }))
+    .sort(() => Math.random() - 0.5) // Shuffle
+    .slice(0, limit); // Limit results
 };

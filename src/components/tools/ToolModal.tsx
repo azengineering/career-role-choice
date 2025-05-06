@@ -9,6 +9,7 @@ interface ToolModalProps {
   title: string;
   description?: string;
   children: React.ReactNode;
+  size?: "sm" | "md" | "lg" | "xl" | "full";
 }
 
 const ToolModal: React.FC<ToolModalProps> = ({
@@ -16,11 +17,20 @@ const ToolModal: React.FC<ToolModalProps> = ({
   onClose,
   title,
   description,
-  children
+  children,
+  size = "md"
 }) => {
+  const sizeClasses = {
+    sm: "sm:max-w-lg",
+    md: "sm:max-w-2xl",
+    lg: "sm:max-w-4xl",
+    xl: "sm:max-w-6xl",
+    full: "sm:max-w-[calc(100vw-4rem)]"
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className={`${sizeClasses[size]} max-h-[calc(100vh-4rem)] overflow-y-auto`}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
