@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -17,6 +16,7 @@ interface JobPostFormProps {
 const JobPostForm: React.FC<JobPostFormProps> = ({ 
   initialData = {
     title: "",
+    company: "", // Added missing company field
     industry: "",
     location: "",
     type: "",
