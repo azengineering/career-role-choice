@@ -1,9 +1,8 @@
-
 // A simple localStorage-based database system for multi-user support
 // This simulates a proper database for trial/demo purposes
 
 // Define database collections
-type Collections = 'users' | 'jobs' | 'applications' | 'companies';
+type Collections = 'users' | 'jobs' | 'applications' | 'companies' | 'saved_jobs';
 
 // Generic database item interface
 interface DatabaseItem {
@@ -72,6 +71,17 @@ export interface CompanyData extends DatabaseItem {
   ownerId: string; // userId of the employer who owns this company
 }
 
+// Saved job interface
+export interface SavedJobData extends DatabaseItem {
+  jobId: string;
+  userId: string;
+  jobTitle: string;
+  company: string;
+  savedDate: string;
+  location: string;
+  salary: string;
+}
+
 // Database class to handle CRUD operations
 class LocalStorageDB {
   private dbPrefix = 'jobs_here_db_';
@@ -82,6 +92,7 @@ class LocalStorageDB {
     this.initCollection('jobs');
     this.initCollection('applications');
     this.initCollection('companies');
+    this.initCollection('saved_jobs');
   }
   
   // Initialize a collection if it doesn't exist

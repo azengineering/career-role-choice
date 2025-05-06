@@ -5,9 +5,9 @@ export interface CustomQuestion {
 }
 
 export interface JobPostingData {
-  id?: number;
+  id?: number | string;
   title: string;
-  company: string; // Added company field
+  company: string;
   industry: string;
   location: string;
   type: string;
@@ -22,6 +22,12 @@ export interface JobPostingData {
   isDraft?: boolean;
   status?: string;
   postedDate?: string;
-  tags?: string[]; // Added tags for the job card display
-  matchScore?: number; // Added match score for job seeker relevance
+  postedBy?: string; // Added postedBy for employer ID
+  applications?: number; // Added applications count
+  views?: number; // Added views count
+  tags?: string[];
+  matchScore?: number;
+  // DatabaseItem properties
+  createdAt?: string;
+  updatedAt?: string;
 }

@@ -14,34 +14,34 @@ export const getJobsByEmployer = (employerId: string) => {
 
 // Get job by ID
 export const getJobById = (jobId: number | string) => {
-  return db.getById<JobPostingData>('jobs', jobId);
+  return db.getById<JobPostingData>('jobs', String(jobId));
 };
 
 // Update job
 export const updateJob = (jobId: number | string, updates: Partial<JobPostingData>) => {
-  return db.update<JobPostingData>('jobs', jobId, updates);
+  return db.update<JobPostingData>('jobs', String(jobId), updates);
 };
 
 // Delete job
 export const deleteJob = (jobId: number | string) => {
-  return db.delete('jobs', jobId);
+  return db.delete('jobs', String(jobId));
 };
 
 // Apply for job
 export const applyForJob = (jobId: number | string, userId: string) => {
   // Get the job
-  const job = db.getById<JobPostingData>('jobs', jobId);
+  const job = db.getById<JobPostingData>('jobs', String(jobId));
   
   if (!job) return false;
   
   // Update applications count
-  db.update<JobPostingData>('jobs', jobId, {
+  db.update<JobPostingData>('jobs', String(jobId), {
     applications: (job.applications || 0) + 1
   });
   
   // Store the application in 'applications' table
   db.add('applications', {
-    jobId,
+    jobId: String(jobId),
     userId,
     jobTitle: job.title,
     company: job.company,
@@ -55,20 +55,20 @@ export const applyForJob = (jobId: number | string, userId: string) => {
 // Save job
 export const saveJob = (jobId: number | string, userId: string) => {
   // Get the job
-  const job = db.getById<JobPostingData>('jobs', jobId);
+  const job = db.getById<JobPostingData>('jobs', String(jobId));
   
   if (!job) return false;
   
   // Check if already saved
   const existing = db.query('saved_jobs', item => 
-    item.jobId == jobId && item.userId === userId
+    item.jobId === String(jobId) && item.userId === userId
   );
   
   if (existing.length > 0) return false;
   
   // Store in 'saved_jobs' table
   db.add('saved_jobs', {
-    jobId,
+    jobId: String(jobId),
     userId,
     jobTitle: job.title,
     company: job.company,
@@ -93,7 +93,7 @@ export const getAppliedJobs = (userId: string) => {
 // Remove saved job
 export const removeSavedJob = (jobId: number | string, userId: string) => {
   const savedJobs = db.query('saved_jobs', item => 
-    item.jobId == jobId && item.userId === userId
+    item.jobId === String(jobId) && item.userId === userId
   );
   
   if (savedJobs.length === 0) return false;
@@ -105,6 +105,6 @@ export const removeSavedJob = (jobId: number | string, userId: string) => {
 // Get job applications for an employer
 export const getJobApplications = (jobIds: (number | string)[]) => {
   return db.query('applications', application => 
-    jobIds.includes(application.jobId)
+    jobIds.some(id => application.jobId === String(id))
   );
 };
