@@ -5,7 +5,7 @@ export interface CustomQuestion {
 }
 
 export interface JobPostingData {
-  id: string; // Changed from optional to required
+  id: string; // Required
   title: string;
   company: string;
   industry: string;
@@ -27,7 +27,7 @@ export interface JobPostingData {
   views?: number;
   tags?: string[];
   matchScore?: number;
-  // DatabaseItem properties
-  createdAt?: string;
-  updatedAt?: string;
+  // DatabaseItem properties - making these required to satisfy DatabaseItem constraint
+  createdAt: string; // Changed from optional to required
+  updatedAt: string; // Changed from optional to required
 }

@@ -34,9 +34,13 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
   mode = "create",
   onSubmit 
 }) => {
-  // We need to ensure id is always present in formData
+  const now = new Date().toISOString();
+  
+  // We need to ensure id, createdAt, and updatedAt are always present in formData
   const [formData, setFormData] = useState<JobPostingData>({
     id: initialData.id || Date.now().toString(), // Provide a default id if not present
+    createdAt: initialData.createdAt || now, // Provide current timestamp as default
+    updatedAt: initialData.updatedAt || now, // Provide current timestamp as default
     ...initialData as any // Cast to any to avoid TS errors with partial data
   } as JobPostingData);
   
@@ -64,6 +68,7 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  
   const addSkill = () => {
     if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
       setFormData(prev => ({
@@ -80,6 +85,7 @@ const JobPostForm: React.FC<JobPostFormProps> = ({
       skills: prev.skills.filter((_, i) => i !== index)
     }));
   };
+  
   
   const addCustomQuestion = () => {
     if (questionInput.trim() && formData.customQuestions.length < 10) {
@@ -172,8 +178,7 @@ We offer a dynamic work environment with opportunities for professional growth a
         postedBy: user?.id || 'unknown',
         applications: formData.applications || 0,
         views: formData.views || 0,
-        createdAt: formData.createdAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString() // Always update the updatedAt timestamp
       };
       
       // Save to our local database
@@ -206,6 +211,7 @@ We offer a dynamic work environment with opportunities for professional growth a
     }
   };
 
+  
   // Prepare preview data for the FormActions component
   const previewData = formData.title ? {
     title: formData.title,
