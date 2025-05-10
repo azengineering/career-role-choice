@@ -1,4 +1,3 @@
-
 import { db } from './localStorageDB';
 import { JobPostingData } from '@/components/employer/JobPostFormTypes';
 
@@ -128,7 +127,7 @@ export const getJobApplicationsByJobId = (jobId: string | number) => {
 
 // Update application status
 export const updateApplicationStatus = (applicationId: string, status: string) => {
-  return db.update('applications', applicationId, { status });
+  return db.update('applications', applicationId, { status } as any);
 };
 
 // Get a single application by ID

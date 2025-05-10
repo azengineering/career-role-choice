@@ -126,7 +126,7 @@ const FindJobsPage: React.FC = () => {
       });
     }
     
-    return success;
+    return !!success; // Convert to boolean explicitly
   };
   
   // Handle saving a job
@@ -154,7 +154,7 @@ const FindJobsPage: React.FC = () => {
       });
     }
     
-    return success;
+    return !!success; // Convert to boolean explicitly
   };
 
   // Filter jobs based on search term and filters
